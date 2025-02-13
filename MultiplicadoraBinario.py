@@ -272,8 +272,8 @@ tm = TuringMachine(tm_logic)
 show_steps = True 
 
 # Exemplo:
-input1 = "111"
-input2 = "110"
+input1 = "10"
+input2 = "11"
 input_tape = list(input1 + "S" + input2 + "_")
 result_tape = tm.run(input_tape, show_steps)
 
