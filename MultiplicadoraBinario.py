@@ -149,124 +149,122 @@ class TuringMachine:
         return "".join(tape)
 
 tm_logic = """
-  ; Set up tally
-  0 * * l 1
-  1 _ _ l 2
-  2 _ 0 r 3
-  3 _ _ r 10
+; Multiplication of two binary numbers, in tuple syntax.
+; Example input: 11S10
+; Symbol '_' is used for blank, 'S' is used instead of '*' as a literal separator.
 
-  ; Find end of num1
-  10 _ _ l 11
-  10 x x l 11
-  10 0 0 r 10
-  10 1 1 r 10
+; -- start state: start
+0 0 0 l init       ; [0,1]: {L: init}
+0 1 1 l init
 
+; -- init
+init _ + r right       ; ' ' => '_'; {write: '+', R: right}
 
-  ; If last digit of num1 is 0, multiply num2 by 2
-  11 0 x r 20
-  ; If last digit of num1 is 1, add num2 to tally and then multiply num2 by 2
-  11 1 x r 30
+; -- right
+right 0 0 r right      ; [0,1,'*']: R  => substituí '*' por 'S'
+right 1 1 r right
+right S S r right
+right _ _ l readB      ; ' ' => '_'; {L: readB}
 
+; -- readB
+readB 0 _ l doubleL    ; 0: {write: ' ', L: doubleL} => '_' no lugar de espaço
+readB 1 _ l addA       ; 1: {write: ' ', L: addA}
 
-  ; Multiply num2 by 2
-  20 _ _ r 20
-  20 x x r 20
-  20 * * r 21
-  21 _ 0 l 25 ; Multiplication by 2 done, return to end of num1
-  21 * * r 21
-  25 _ _ l 26
-  25 * * l 25
-  26 _ _ r 80 ; Finished multiplying. Clean up
-  26 x x l 26
-  26 0 0 * 11
-  26 1 1 * 11
+; -- addA
+addA 0 0 l addA        ; [0,1]: L => permanece em addA
+addA 1 1 l addA
+addA S S l read        ; '*': {L: read} => substituído '*' por 'S'
 
-  ; Add num2 to tally
-  30 _ _ r 30
-  30 x x r 30
-  30 * * r 31
-  31 _ _ l 32
-  31 * * r 31
-  32 0 o l 40 ; Add a zero
-  32 1 i l 50 ; Add a one
-  32 o o l 32
-  32 i i l 32
-  32 _ _ r 70 ; Finished adding
+; -- doubleL
+doubleL 0 0 l doubleL  ; [0,1]: L => continua em doubleL
+doubleL 1 1 l doubleL
+doubleL S 0 r shift    ; '*': {write: 0, R: shift} => substituí '*' por 'S'
 
-  ; Adding a 0 to tally
-  40 _ _ l 41
-  40 * * l 40 ; Found end of num2
-  41 _ _ l 41
-  41 * * l 42 ; Found start of num1
-  42 _ _ l 43 ; Found end of num1
-  42 * * l 42
-  43 o o l 43
-  43 i i l 43
-  43 0 o r 44
-  43 1 i r 44
-  43 _ o r 44
-  44 _ _ r 45 ; Found end of tally
-  44 * * r 44
-  45 _ _ r 45
-  45 * * r 46 ; Found start of num1
-  46 _ _ r 47 ; Found end of num1
-  46 * * r 46
-  47 _ _ r 47
-  47 * * r 48
-  48 _ _ l 32 ; Found end of num2
-  48 * * r 48
+; -- double
+double 0 0 r double    ; [0,1,+]: R => permanece em double
+double 1 1 r double
+double + + r double
+double S 0 r shift     ; '*': {write: 0, R: shift} => substituí '*' por 'S'
 
-  ; Adding a 1 to tally
-  50 _ _ l 51 ; Found end of num2
-  50 * * l 50
-  51 _ _ l 51
-  51 * * l 52 ; Found start of num1
-  52 _ _ l 53 ; Found end of num1
-  52 * * l 52
-  53 o o l 53
-  53 i i l 53
-  53 _ i r 55
-  53 0 i r 55 ; return to num2
-  53 1 o l 54
-  54 0 1 r 55
-  54 1 0 l 54
-  54 _ 1 r 55
-  55 _ _ r 56 ; Found end of tally
-  55 * * r 55
-  56 _ _ r 56
-  56 * * r 57 ; Found start of num1
-  57 _ _ r 58 ; Found end of num1
-  57 * * r 57
-  58 _ _ r 58
-  58 * * r 59
-  59 _ _ l 32 ; Found end of num2
-  59 * * r 59
+; -- shift
+shift 0 S r shift0     ; 0: {write: '*', R: shift0} => substituí '*' por 'S'
+shift 1 S r shift1     ; 1: {write: '*', R: shift1}
+shift _ _ l tidy       ; ' ': {L: tidy} => '_' para branco
 
-  ; Finished adding, clean up
-  70 i 1 r 70
-  70 o 0 r 70
-  70 _ _ l 71
-  71 _ _ l 72 ; Found end of num2
-  71 * * l 71
-  72 _ _ l 72
-  72 * * l 73 ; Found start of num1
-  73 _ _ l 74
-  73 * * l 73
-  74 o 0 l 74
-  74 i 1 l 74
-  74 * * r 75 ; Finished cleaning up tally
-  75 _ _ r 76
-  75 * * r 75
-  76 _ _ r 20 ; Multiply num2 by 2
-  76 * * r 76
+; -- shift0
+shift0 0 0 r shift0    ; 0: {R: shift0}
+shift0 1 0 r shift1    ; 1: {write: 0, R: shift1}
+shift0 _ 0 r right     ; ' ' => '_'; {write: 0, R: right}
 
-  ; Finished multiplying, clean up
-  80 x _ r 80
-  80 _ _ r 81
-  81 _ _ l 82
-  81 * _ r 81
-  82 _ _ l 82
-  82 * * * halt
+; -- shift1
+shift1 0 1 r shift0    ; 0: {write: 1, R: shift0}
+shift1 1 1 r shift1    ; 1: {R: shift1}
+shift1 _ 1 r right     ; ' ' => '_'; {write: 1, R: right}
+
+; -- tidy
+tidy 0 _ l tidy        ; [0,1]: {write: ' ', L} => '_' para branco, permanece em tidy
+tidy 1 _ l tidy
+tidy + _ l halt-done   ; +: {write: ' ', L: done} => renomeei done para halt-done
+
+; -- (done) => trocado para 'halt-done' para encerrar a máquina
+
+; -- read
+read 0 c l have0       ; 0: {write: c, L: have0}
+read 1 c l have1       ; 1: {write: c, L: have1}
+read + + l rewrite     ; +: {L: rewrite} (mantém '+')
+
+; -- have0
+have0 0 0 l have0      ; [0,1]: L => fica em have0
+have0 1 1 l have0
+have0 + + l add0       ; +: {L: add0}
+
+; -- have1
+have1 0 0 l have1
+have1 1 1 l have1
+have1 + + l add1
+
+; -- add0
+add0 0 O r back0       ; [0,' ']: {write: O, R: back0} => substitui ' ' por '_'
+add0 _ O r back0
+add0 1 I r back0       ; 1 => {write: I, R: back0}
+add0 O O l add0        ; [O,I]: L => permanece
+add0 I I l add0
+
+; -- add1
+add1 0 I r back1       ; [0,' ']: {write: I, R: back1}
+add1 _ I r back1
+add1 1 O l carry       ; 1 => {write: O, L: carry}
+add1 O O l add1        ; [O,I] => L => continua
+add1 I I l add1
+
+; -- carry
+carry 0 1 r back1      ; [0,' ']: {write: 1, R: back1}
+carry _ 1 r back1
+carry 1 0 l carry      ; 1 => {write: 0, L} => permanece em carry
+
+; -- back0
+back0 0 0 r back0      ; [0,1,O,I,+]: R => continua
+back0 1 1 r back0
+back0 O O r back0
+back0 I I r back0
+back0 + + r back0
+back0 c 0 l read       ; c => {write: 0, L: read}
+
+; -- back1
+back1 0 0 r back1
+back1 1 1 r back1
+back1 O O r back1
+back1 I I r back1
+back1 + + r back1
+back1 c 1 l read       ; c => {write: 1, L: read}
+
+; -- rewrite
+rewrite O 0 l rewrite  ; O => {write: 0, L}
+rewrite I 1 l rewrite  ; I => {write: 1, L}
+rewrite 0 0 l rewrite  ; 0 => {write: 0, L}
+rewrite 1 1 l rewrite  ; 1 => {write: 1, L}
+rewrite _ _ r double   ; ' ' => '_' => {R: double}
+
 """
 
 tm = TuringMachine(tm_logic)
@@ -274,9 +272,9 @@ tm = TuringMachine(tm_logic)
 show_steps = True 
 
 # Exemplo:
-input1 = "101"
-input2 = "111"
-input_tape = list(input1 + "_" + input2 + "_")
+input1 = "111"
+input2 = "110"
+input_tape = list(input1 + "S" + input2 + "_")
 result_tape = tm.run(input_tape, show_steps)
 
 print(f"Entrada 1: {input1}")
