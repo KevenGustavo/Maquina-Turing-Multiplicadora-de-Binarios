@@ -15,10 +15,6 @@
 
 >Esse codigo usa pyhton,para simular uma maquina de turing, que atráves de suas transições realiza a operação de multiplicação de dois numeros binarios dados pelo usario e faz a verificação da resposta por meio de funções python.
 
-## Estrutura do Repositório 
-
-- **`/docs/`**: Documentações adicionais.
-
 
 ## Autores
 
