@@ -35,8 +35,7 @@ Agradecemos a todas as pessoas e instituições que contribuíram para a realiza
 
 ## Outros Repositórios
 
-- [Regex to NFA](https://github.com/DarkGeekMS/regex-to-nfa)
-- [Regex to Epsilon NFA](https://github.com/aayushsrivastava/Regex-to-Epsilon-NFA)
+- [Maquina Turing em Python]([(https://github.com/mcamilamp/Maquina-Turing))
 
 ---
 
