@@ -35,7 +35,7 @@ Agradecemos a todas as pessoas e instituições que contribuíram para a realiza
 
 ## Outros Repositórios
 
-- [Maquina Turing em Python]([(https://github.com/mcamilamp/Maquina-Turing))
+- [Maquina Turing em Python](https://github.com/mcamilamp/Maquina-Turing)
 
 ---
 
